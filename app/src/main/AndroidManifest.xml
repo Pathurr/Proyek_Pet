@@ -11,6 +11,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Proyek">
         <activity
+            android:name=".EditProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -18,28 +24,19 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-
-        <!-- Declare LoginActivity so it can be started from MainActivity -->
+        </activity> <!-- Declare LoginActivity so it can be started from MainActivity -->
         <activity
             android:name=".LoginActivity"
-            android:exported="false" />
-
-        <!-- Declare SignUpActivity so it can be started from MainActivity -->
+            android:exported="false" /> <!-- Declare SignUpActivity so it can be started from MainActivity -->
         <activity
             android:name=".SignUpActivity"
-            android:exported="false" />
-
-        <!-- Declare LupaPasswordActivity so LoginActivity can start it -->
+            android:exported="false" /> <!-- Declare LupaPasswordActivity so LoginActivity can start it -->
         <activity
             android:name=".LupaPasswordActivity"
             android:exported="false" />
         <activity
             android:name=".CheckEmailActivity"
-            android:exported="false"/>
-
-
-
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -63,12 +63,17 @@ class LoginActivity : AppCompatActivity() {
             auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
                     btnLogin.isEnabled = true
+
                     Toast.makeText(
                         this,
                         "Login berhasil",
                         Toast.LENGTH_SHORT
                     ).show()
 
+                    // pindah ke halaman home
+                    val intent = Intent(this, HomeActivity::class.java)
+                    startActivity(intent)
+                    finish() // supaya tidak bisa balik ke login
                 }
                 .addOnFailureListener {
                     btnLogin.isEnabled = true
@@ -78,6 +83,7 @@ class LoginActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+
         }
 
         // lupa password
