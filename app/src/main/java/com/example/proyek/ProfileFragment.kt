@@ -11,13 +11,16 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.bumptech.glide.Glide
 
 
 class ProfileFragment : Fragment() {
 
+    // launcher edit profile
     private val editProfileLauncher =
         registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -28,17 +31,19 @@ class ProfileFragment : Fragment() {
 
                 val name = data.getStringExtra("NAME")
                 val email = data.getStringExtra("EMAIL")
-                val avatarUri = data.getStringExtra("AVATAR_URI")
+                val avatar = data.getStringExtra("AVATAR_URI")
 
                 view?.findViewById<TextView>(R.id.tvName)?.text = name
                 view?.findViewById<TextView>(R.id.tvEmail)?.text = email
 
-                if (avatarUri != null) {
-                    view?.findViewById<ImageView>(R.id.imgAvatar)
-                        ?.setImageURI(Uri.parse(avatarUri))
+                if (avatar != null && isAdded) {
+                    Glide.with(requireContext())
+                        .load(avatar)
+                        .circleCrop()
+                        .into(requireView().findViewById(R.id.imgAvatar))
                 }
-
-                saveProfile(name, email, avatarUri)
+                // simpan lokal
+                saveProfile(name, email, avatar)
             }
         }
 
@@ -53,33 +58,37 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // tampilkan profile
         loadProfile(view)
 
         val menuEditProfile = view.findViewById<LinearLayout>(R.id.menuEditProfile)
-
         val menuLogout = view.findViewById<LinearLayout>(R.id.menuLogout)
+
+        menuEditProfile.setOnClickListener {
+            val intent = Intent(requireContext(), EditProfileActivity::class.java)
+            editProfileLauncher.launch(intent)
+        }
 
         menuLogout.setOnClickListener {
 
-            // 1. logout firebase
+            // logout firebase
             FirebaseAuth.getInstance().signOut()
 
-            // 2. hapus data profile lokal
+            // hapus data lokal
             val pref = requireContext()
                 .getSharedPreferences("PROFILE_PREF", Context.MODE_PRIVATE)
             pref.edit().clear().apply()
 
-            // 3. balik ke MainActivity (page awal)
+            // balik ke halaman awal
             val intent = Intent(requireContext(), MainActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
-
-        menuEditProfile.setOnClickListener {
-            val intent = Intent(requireContext(), EditProfileActivity::class.java)
-            editProfileLauncher.launch(intent) // ✅ PENTING
-        }
     }
+
+    // ===============================
+    // LOCAL STORAGE
+    // ===============================
 
     private fun saveProfile(name: String?, email: String?, avatar: String?) {
         val pref = requireContext()
@@ -96,16 +105,60 @@ class ProfileFragment : Fragment() {
         val pref = requireContext()
             .getSharedPreferences("PROFILE_PREF", Context.MODE_PRIVATE)
 
-        val name = pref.getString("NAME", "Your Name")
-        val email = pref.getString("EMAIL", "your@email.com")
+        val name = pref.getString("NAME", null)
+        val email = pref.getString("EMAIL", null)
         val avatar = pref.getString("AVATAR", null)
 
-        view.findViewById<TextView>(R.id.tvName).text = name
-        view.findViewById<TextView>(R.id.tvEmail).text = email
+        // 1️⃣ kalau lokal ada → pakai lokal
+        if (!name.isNullOrEmpty() && !email.isNullOrEmpty()) {
 
-        if (avatar != null) {
-            view.findViewById<ImageView>(R.id.imgAvatar)
-                .setImageURI(Uri.parse(avatar))
+            view.findViewById<TextView>(R.id.tvName).text = name
+            view.findViewById<TextView>(R.id.tvEmail).text = email
+
+            if (!avatar.isNullOrEmpty()) {
+                Glide.with(view)
+                    .load(avatar)
+                    .circleCrop()
+                    .into(view.findViewById(R.id.imgAvatar))
+            }
+            return
         }
+        // 2️⃣ kalau belum ada → fetch dari firebase
+        fetchProfileFromFirebase(view)
+    }
+
+    // ===============================
+    // FIREBASE
+    // ===============================
+
+    private fun fetchProfileFromFirebase(view: View) {
+
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val uid = user.uid
+
+        FirebaseDatabase.getInstance()
+            .getReference("users")
+            .child(uid)
+            .get()
+            .addOnSuccessListener { snapshot ->
+
+                if (!snapshot.exists()) return@addOnSuccessListener
+
+                val name = snapshot.child("name").value?.toString()
+                val email = snapshot.child("email").value?.toString()
+                val avatar = snapshot.child("avatar").value?.toString()
+
+                view.findViewById<TextView>(R.id.tvName).text = name
+                view.findViewById<TextView>(R.id.tvEmail).text = email
+
+                if (!avatar.isNullOrEmpty()) {
+                    Glide.with(view)
+                        .load(avatar)
+                        .circleCrop()
+                        .into(view.findViewById(R.id.imgAvatar))
+                }
+                // simpan ke lokal supaya next buka cepat
+                saveProfile(name, email, avatar)
+            }
     }
 }

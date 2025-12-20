@@ -20,14 +20,14 @@
             android:paddingBottom="16dp"/>
 
         <!-- AVATAR -->
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgAvatar"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:src="@drawable/ic_avatar_placeholder"
             android:layout_gravity="center"
-            android:src="@drawable/ic_profile"
-            android:background="@drawable/bg_circle"
-            android:padding="16dp"/>
+            android:scaleType="centerCrop"
+            android:layout_marginTop="16dp"/>
 
         <!-- NAME -->
         <TextView
