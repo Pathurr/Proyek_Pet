@@ -3,8 +3,8 @@ package com.example.proyek
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import androidx.fragment.app.Fragment
-
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
 
 class HomeActivity : AppCompatActivity() {
 
@@ -12,25 +12,15 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
-        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+        // Ambil BottomNavigationView
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
 
-        // default fragment
-        loadFragment(HomeFragment())
+        // Ambil NavController dari NavHostFragment
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_home) as NavHostFragment
+        val navController = navHostFragment.navController
 
-        bottomNav.setOnItemSelectedListener {
-            when (it.itemId) {
-                R.id.nav_home -> loadFragment(HomeFragment())
-                R.id.nav_notification -> loadFragment(NotificationFragment())
-                R.id.nav_profile -> loadFragment(ProfileFragment())
-            }
-            true
-        }
-    }
-
-    private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
+        // Hubungkan BottomNavigationView dengan NavController
+        bottomNav.setupWithNavController(navController)
     }
 }
-
