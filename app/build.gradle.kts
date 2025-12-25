@@ -63,5 +63,7 @@ dependencies {
     // Navigation Fragment & UI
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.0")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.0")
+    //Google maps
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
 
 }
