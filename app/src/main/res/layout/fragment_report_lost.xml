@@ -2,7 +2,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:id="@+id/scrollView">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -49,13 +50,21 @@
             android:minLines="3" />
 
         <FrameLayout
+            android:id="@+id/mapContainer"
             android:layout_width="match_parent"
             android:layout_height="300dp">
 
-            <org.osmdroid.views.MapView
-                android:id="@+id/mapViewLost"
+            <fragment
+                android:id="@+id/mapFragmentLost"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="300dp" />
+
+            <View
+                android:id="@+id/mapTouchInterceptor"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent" />
 
             <ImageButton
                 android:id="@+id/btnZoomIn"

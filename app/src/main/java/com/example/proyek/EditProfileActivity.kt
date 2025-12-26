@@ -1,27 +1,34 @@
 package com.example.proyek
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.location.Geocoder
 import android.net.Uri
 import android.os.Bundle
+import android.view.MotionEvent
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.cloudinary.android.MediaManager
+import com.cloudinary.android.callback.UploadCallback
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.yalantis.ucrop.UCrop
-import org.osmdroid.config.Configuration
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
 import java.io.File
 import java.util.*
 
-class EditProfileActivity : AppCompatActivity() {
+class EditProfileActivity : AppCompatActivity(), OnMapReadyCallback {
+
+    companion object {
+        const val PICK_IMAGE_REQUEST = 100
+    }
 
     // ================= IMAGE =================
     private lateinit var imgAvatar: ImageView
@@ -30,10 +37,10 @@ class EditProfileActivity : AppCompatActivity() {
     private var isUploading = false
 
     // ================= MAP =================
-    private lateinit var mapView: MapView
+    private lateinit var googleMap: GoogleMap
     private var marker: Marker? = null
-    private var selectedLat: Double? = null
-    private var selectedLng: Double? = null
+    private var selectedLat: Double = -6.2
+    private var selectedLng: Double = 106.816666
     private var mapImageUrl: String? = null
 
     // ================= FORM =================
@@ -42,16 +49,12 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var etPhone: EditText
     private lateinit var etLocation: EditText
     private lateinit var etFullAddress: EditText
+    private lateinit var scrollView: ScrollView
+    private lateinit var mapContainer: FrameLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_profile)
-
-        // OSM
-        Configuration.getInstance().load(
-            this,
-            getSharedPreferences("osm_pref", Context.MODE_PRIVATE)
-        )
 
         // Cloudinary init
         try {
@@ -67,47 +70,57 @@ class EditProfileActivity : AppCompatActivity() {
         etPhone = findViewById(R.id.etPhone)
         etLocation = findViewById(R.id.etLocation)
         etFullAddress = findViewById(R.id.etFUllAddress)
-        mapView = findViewById(R.id.mapView)
+        scrollView = findViewById(R.id.scrollView)
+        mapContainer = findViewById(R.id.mapContainer)
 
         imgAvatar.setOnClickListener { pickImage() }
         findViewById<Button>(R.id.btnSave).setOnClickListener { saveProfile() }
 
-        setupMap()
+        // Setup Google Map
+        val mapFragment = supportFragmentManager
+            .findFragmentById(R.id.mapFragment) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
+        // ScrollView touch handling
+        mapContainer.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> scrollView.requestDisallowInterceptTouchEvent(true)
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> scrollView.requestDisallowInterceptTouchEvent(false)
+            }
+            false
+        }
+
         loadFromLocal()
         fetchFromFirebase()
     }
 
     // ================= MAP =================
-    private fun setupMap() {
-        mapView.setMultiTouchControls(true)
-        val start = GeoPoint(selectedLat ?: -6.2, selectedLng ?: 106.816666)
-        mapView.controller.setZoom(15.0)
-        mapView.controller.setCenter(start)
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+        val start = LatLng(selectedLat, selectedLng)
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(start, 15f))
 
-        marker = Marker(mapView).apply {
-            position = start
-            isDraggable = true
-            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            setOnMarkerDragListener(object : Marker.OnMarkerDragListener {
-                override fun onMarkerDragEnd(marker: Marker) {
-                    updateAddress(marker.position)
-                }
-                override fun onMarkerDrag(marker: Marker) {}
-                override fun onMarkerDragStart(marker: Marker) {}
-            })
-        }
-        mapView.overlays.add(marker)
-        // Set initial lat/lng
-        selectedLat = start.latitude
-        selectedLng = start.longitude
+        marker = googleMap.addMarker(
+            MarkerOptions().position(start).draggable(true)
+        )
+
+        googleMap.setOnMarkerDragListener(object : GoogleMap.OnMarkerDragListener {
+            override fun onMarkerDragEnd(m: Marker) {
+                selectedLat = m.position.latitude
+                selectedLng = m.position.longitude
+                updateAddress(m.position)
+            }
+            override fun onMarkerDrag(m: Marker) {}
+            override fun onMarkerDragStart(m: Marker) {}
+        })
+        googleMap.uiSettings.isZoomControlsEnabled = true
+        googleMap.uiSettings.isMapToolbarEnabled = false
     }
 
-    private fun updateAddress(point: GeoPoint) {
-        selectedLat = point.latitude
-        selectedLng = point.longitude
+    private fun updateAddress(latLng: LatLng) {
         try {
-            val geo = Geocoder(this, Locale.getDefault())
-            val list = geo.getFromLocation(point.latitude, point.longitude, 1)
+            val geo = android.location.Geocoder(this, Locale.getDefault())
+            val list = geo.getFromLocation(latLng.latitude, latLng.longitude, 1)
             if (!list.isNullOrEmpty()) {
                 etFullAddress.setText(list[0].getAddressLine(0))
             }
@@ -120,7 +133,7 @@ class EditProfileActivity : AppCompatActivity() {
             Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 type = "image/*"
                 addCategory(Intent.CATEGORY_OPENABLE)
-            }, 100
+            }, PICK_IMAGE_REQUEST
         )
     }
 
@@ -129,7 +142,7 @@ class EditProfileActivity : AppCompatActivity() {
         if (resultCode != Activity.RESULT_OK || data == null) return
 
         when (requestCode) {
-            100 -> {
+            PICK_IMAGE_REQUEST -> {
                 originalImageUri = data.data
                 originalImageUri?.let { startCrop(it) }
             }
@@ -158,7 +171,7 @@ class EditProfileActivity : AppCompatActivity() {
         MediaManager.get().upload(uri)
             .unsigned("android_unsigned")
             .option("folder", "avatars")
-            .callback(object : com.cloudinary.android.callback.UploadCallback {
+            .callback(object : UploadCallback {
                 override fun onSuccess(id: String?, data: Map<*, *>) {
                     avatarCloudUrl = data["secure_url"] as String
                     isUploading = false
@@ -174,13 +187,19 @@ class EditProfileActivity : AppCompatActivity() {
 
     // ================= MAP → IMAGE =================
     private fun captureMapBitmap(onResult: (File) -> Unit) {
-        mapView.isDrawingCacheEnabled = true
-        val bitmap = Bitmap.createBitmap(mapView.drawingCache)
-        mapView.isDrawingCacheEnabled = false
+        if (!::googleMap.isInitialized) return
 
-        val file = File(cacheDir, "map_${System.currentTimeMillis()}.jpg")
-        file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) }
-        onResult(file)
+        googleMap.snapshot { bitmap ->
+            bitmap?.let { bmp ->
+                val file = File(cacheDir, "map_${System.currentTimeMillis()}.jpg")
+                file.outputStream().use { out ->
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                }
+                onResult(file)
+            } ?: run {
+                Toast.makeText(this, "Gagal mengambil snapshot map", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun uploadMapToCloudinary(file: File, onDone: () -> Unit) {
@@ -188,7 +207,7 @@ class EditProfileActivity : AppCompatActivity() {
         MediaManager.get().upload(Uri.fromFile(file))
             .unsigned("android_unsigned")
             .option("folder", "user_maps")
-            .callback(object : com.cloudinary.android.callback.UploadCallback {
+            .callback(object : UploadCallback {
                 override fun onSuccess(id: String?, data: Map<*, *>) {
                     mapImageUrl = data["secure_url"] as String
                     isUploading = false
@@ -252,8 +271,8 @@ class EditProfileActivity : AppCompatActivity() {
             .putString("FULL_ADDRESS", etFullAddress.text.toString())
             .putString("AVATAR", avatarCloudUrl)
             .putString("MAP_IMAGE", mapImageUrl)
-            .putFloat("LAT", selectedLat?.toFloat() ?: -6.2f)
-            .putFloat("LNG", selectedLng?.toFloat() ?: 106.816666f)
+            .putFloat("LAT", selectedLat.toFloat())
+            .putFloat("LNG", selectedLng.toFloat())
             .apply()
     }
 
@@ -287,33 +306,22 @@ class EditProfileActivity : AppCompatActivity() {
                 etFullAddress.setText(it.child("fullAddress").value?.toString())
                 avatarCloudUrl = it.child("avatar").value?.toString()
                 mapImageUrl = it.child("location_map").value?.toString()
-                selectedLat = it.child("lat").getValue(Double::class.java)
-                selectedLng = it.child("lng").getValue(Double::class.java)
+                selectedLat = it.child("lat").getValue(Double::class.java) ?: -6.2
+                selectedLng = it.child("lng").getValue(Double::class.java) ?: 106.816666
+
                 updateMarkerPosition()
             }
     }
+
     private fun updateMarkerPosition() {
-        val lat = selectedLat ?: -6.2
-        val lng = selectedLng ?: 106.816666
-        val point = GeoPoint(lat, lng)
-
-        if (marker == null) {
-            marker = Marker(mapView)
-            marker!!.isDraggable = true
-            marker!!.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-            marker!!.setOnMarkerDragListener(object : Marker.OnMarkerDragListener {
-                override fun onMarkerDragEnd(marker: Marker) { updateAddress(marker.position) }
-                override fun onMarkerDrag(marker: Marker) {}
-                override fun onMarkerDragStart(marker: Marker) {}
-            })
-            mapView.overlays.add(marker)
+        val point = LatLng(selectedLat, selectedLng)
+        if (::googleMap.isInitialized) {
+            if (marker == null) {
+                marker = googleMap.addMarker(MarkerOptions().position(point).draggable(true))
+            } else {
+                marker!!.position = point
+            }
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 15f))
         }
-        marker!!.position = point
-        mapView.controller.setCenter(point)
-        mapView.controller.setZoom(15.0)
     }
-
-    override fun onResume() { super.onResume(); mapView.onResume() }
-    override fun onPause() { super.onPause(); mapView.onPause() }
-    override fun onDestroy() { super.onDestroy(); mapView.onDetach() }
 }

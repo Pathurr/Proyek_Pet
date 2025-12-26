@@ -18,8 +18,10 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-//melayu
+
 class HomeFragment : Fragment(), OnMapReadyCallback {
+    private lateinit var btnZoomIn: ImageButton
+    private lateinit var btnZoomOut: ImageButton
 
     private lateinit var btnAdd: ImageButton
     private lateinit var googleMap: GoogleMap
@@ -33,6 +35,9 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        btnZoomIn = view.findViewById(R.id.btnZoomIn)
+        btnZoomOut = view.findViewById(R.id.btnZoomOut)
+
         super.onViewCreated(view, savedInstanceState)
 
         btnAdd = view.findViewById(R.id.btnAdd)
@@ -62,7 +67,16 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             MarkerOptions().position(startLocation).title("Lokasi Awal")
         )
 
-        googleMap.uiSettings.isZoomControlsEnabled = true
+        btnZoomIn.setOnClickListener {
+            googleMap.animateCamera(CameraUpdateFactory.zoomIn())
+        }
+
+        btnZoomOut.setOnClickListener {
+            googleMap.animateCamera(CameraUpdateFactory.zoomOut())
+        }
+
+
+        googleMap.uiSettings.isZoomControlsEnabled = false
         googleMap.uiSettings.isMapToolbarEnabled = false
     }
 
