@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!-- TYPE -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Jenis Laporan" />
+
+    <Spinner
+        android:id="@+id/spinnerType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- ANIMAL TYPE -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Jenis Hewan"
+        android:layout_marginTop="8dp"/>
+
+    <Spinner
+        android:id="@+id/spinnerAnimal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- ANIMAL COLOR -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Warna Hewan"
+        android:layout_marginTop="8dp"/>
+
+    <Spinner
+        android:id="@+id/spinnerColor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <!-- NAME -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nama Hewan"
+        android:layout_marginTop="8dp"/>
+
+    <EditText
+        android:id="@+id/etAnimalName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Opsional"/>
+
+</LinearLayout>

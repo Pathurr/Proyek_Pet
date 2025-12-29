@@ -6,41 +6,93 @@
     android:layout_height="match_parent"
     tools:context=".HomeFragment">
 
+    <!-- ================= MAP + SEARCH BAR ================= -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Search Bar -->
-        <EditText
-            android:id="@+id/etSearch"
+        <!-- TOP SEARCH BAR -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Search location..."
-            android:padding="12dp"
-            android:drawableStart="@android:drawable/ic_menu_search"
-            android:drawablePadding="8dp"
+            android:orientation="horizontal"
             android:background="@android:color/white"
-            android:inputType="text" />
+            android:padding="8dp"
+            android:elevation="4dp">
 
-        <!-- Map -->
+            <ImageButton
+                android:id="@+id/btnSearch"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_menu_search"
+                android:contentDescription="Search"/>
+
+            <EditText
+                android:id="@+id/etSearch"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:hint="Search pet..."
+                android:padding="12dp"
+                android:background="@android:color/white"
+                android:focusable="false"
+                android:clickable="true"/>
+
+            <ImageButton
+                android:id="@+id/btnFilter"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_filter"
+                android:contentDescription="Filter" />
+        </LinearLayout>
+
+        <!-- GOOGLE MAP -->
         <fragment
             android:id="@+id/mapFragment"
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"/>
     </LinearLayout>
 
-    <!-- Zoom buttons -->
+    <!-- ================= SEARCH OVERLAY ================= -->
+    <LinearLayout
+        android:id="@+id/searchOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#CCFFFFFF"
+        android:visibility="gone"
+        android:elevation="10dp">
+
+        <EditText
+            android:id="@+id/etSearchAnimal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Cari hewan..."
+            android:padding="12dp"
+            android:imeOptions="actionSearch"
+            android:singleLine="true"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSearchResults"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <!-- ================= ZOOM CONTROLS ================= -->
     <LinearLayout
         android:id="@+id/zoomControls"
         android:layout_width="60dp"
         android:layout_height="120dp"
         android:orientation="vertical"
         android:layout_gravity="bottom|start"
+        android:layout_margin="16dp"
         android:gravity="center"
         android:background="@android:color/white"
-        android:clipToOutline="true"
         android:elevation="4dp"
         android:padding="4dp">
 
@@ -51,12 +103,12 @@
             android:layout_weight="1"
             android:background="@drawable/circle_bg"
             android:src="@android:drawable/ic_input_add"
-            app:tint="@android:color/black" />
+            app:tint="@android:color/black"/>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="@android:color/darker_gray" />
+            android:background="@android:color/darker_gray"/>
 
         <ImageButton
             android:id="@+id/btnZoomOut"
@@ -65,10 +117,25 @@
             android:layout_weight="1"
             android:background="@drawable/circle_bg"
             android:src="@drawable/ic_minus"
-            app:tint="@android:color/black" />
+            app:tint="@android:color/black"/>
+
     </LinearLayout>
 
-    <!-- Floating Add Button -->
+    <ImageButton
+        android:id="@+id/btnResetMap"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|start"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="152dp"
+        android:src="@drawable/ic_reset_location"
+        android:background="@drawable/bg_circle"
+        android:contentDescription="Reset Map"
+        android:elevation="6dp"
+        android:visibility="visible" />
+
+
+    <!-- ================= ADD BUTTON ================= -->
     <ImageButton
         android:id="@+id/btnAdd"
         android:layout_width="64dp"
@@ -79,4 +146,13 @@
         android:src="@drawable/ic_add_white"
         android:elevation="8dp"
         app:tint="@android:color/white"/>
+
+    <Button
+        android:id="@+id/btnOpenGoogleMaps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="View in Google Maps"
+        android:visibility="gone"/>
+
+
 </FrameLayout>

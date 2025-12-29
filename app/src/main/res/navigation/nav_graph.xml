@@ -38,4 +38,27 @@
         android:name="com.example.proyek.ProfileFragment"
         android:label="Profile" />
 
+    <fragment
+        android:id="@+id/reportDetailFragment"
+        android:name="com.example.proyek.ReportDetailFragment"
+        android:label="Detail Laporan">
+
+        <argument
+            android:name="reportId"
+            app:argType="string" />
+
+        <argument
+            android:name="reportType"
+            app:argType="string" />
+    </fragment>
+    <action
+        android:id="@+id/action_home_to_reportDetailFragment"
+        app:destination="@id/reportDetailFragment" />
+
+    <action
+        android:id="@+id/action_reportDetailFragment_to_homeFragment"
+        app:destination="@id/homeFragment"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="true"/>
+
 </navigation>

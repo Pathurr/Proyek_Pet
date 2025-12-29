@@ -1,14 +1,97 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ReportFoundFragment">
+    android:id="@+id/scrollView">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="16dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content">
 
-</FrameLayout>
+        <TextView
+            android:text="Laporkan Hewan Ditemukan"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/etAnimalName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nama hewan (jika diketahui)"
+            android:inputType="textPersonName"
+            android:padding="12dp"/>
+
+
+        <ImageView
+            android:id="@+id/ivAnimalPhoto"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:background="#DDDDDD"/>
+
+        <Button
+            android:id="@+id/btnPickPhoto"
+            android:text="Pilih Foto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Spinner
+            android:id="@+id/spinnerAnimalType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/etAnimalColor"
+            android:hint="Warna hewan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/etDescription"
+            android:hint="Deskripsi tambahan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/tvLocation"
+            android:text="Lokasi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginVertical="8dp">
+
+            <fragment
+                android:id="@+id/mapFragmentFound"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="200dp" />
+
+            <View
+                android:id="@+id/mapTouchInterceptor"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:background="@android:color/transparent" />
+
+        </FrameLayout>
+
+        <EditText
+            android:id="@+id/etContact"
+            android:hint="Kontak Anda"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/btnSaveReport"
+            android:text="Simpan Laporan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+</ScrollView>
