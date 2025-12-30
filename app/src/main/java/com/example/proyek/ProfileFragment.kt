@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.bumptech.glide.Glide
@@ -63,10 +64,16 @@ class ProfileFragment : Fragment() {
 
         val menuEditProfile = view.findViewById<LinearLayout>(R.id.menuEditProfile)
         val menuLogout = view.findViewById<LinearLayout>(R.id.menuLogout)
+        val menuMyReport = view.findViewById<LinearLayout>(R.id.menuMyReport)
 
         menuEditProfile.setOnClickListener {
             val intent = Intent(requireContext(), EditProfileActivity::class.java)
             editProfileLauncher.launch(intent)
+        }
+
+        menuMyReport.setOnClickListener {
+            findNavController()
+                .navigate(R.id.action_profileFragment_to_myReportFragment)
         }
 
         menuLogout.setOnClickListener {

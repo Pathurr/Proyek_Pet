@@ -30,13 +30,19 @@
 
     <fragment
         android:id="@+id/notificationFragment"
-        android:name="com.example.proyek.NotificationFragment"
+        android:name="com.example.proyek.SearchFragment"
         android:label="Notification" />
 
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.proyek.ProfileFragment"
-        android:label="Profile" />
+        android:label="Profile">
+
+        <action
+            android:id="@+id/action_profileFragment_to_myReportFragment"
+            app:destination="@id/myReportFragment" />
+
+    </fragment>
 
     <fragment
         android:id="@+id/reportDetailFragment"
@@ -60,5 +66,20 @@
         app:destination="@id/homeFragment"
         app:popUpTo="@id/homeFragment"
         app:popUpToInclusive="true"/>
+
+    <fragment
+        android:id="@+id/myReportFragment"
+        android:name="com.example.proyek.MyReportFragment"
+        android:label="My Report">
+
+        <action
+            android:id="@+id/action_myReportFragment_to_reportLostFragment"
+            app:destination="@id/reportLostFragment" />
+
+        <action
+            android:id="@+id/action_myReportFragment_to_reportFoundFragment"
+            app:destination="@id/reportFoundFragment" />
+
+    </fragment>
 
 </navigation>

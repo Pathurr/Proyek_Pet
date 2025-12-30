@@ -98,25 +98,6 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/menuMyFound"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="12dp">
-
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_found"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="My Found"
-                android:layout_marginStart="16dp"/>
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/menuLogout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

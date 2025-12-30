@@ -54,6 +54,9 @@ class ReportLostFragment : Fragment(), OnMapReadyCallback {
     private var animalPhotoUrl: String? = null
     private var isUploading = false
 
+    private var isEdit = false
+    private var reportId: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
