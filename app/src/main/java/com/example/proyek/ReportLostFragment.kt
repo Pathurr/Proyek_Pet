@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.UploadCallback
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -187,12 +188,7 @@ class ReportLostFragment : Fragment(), OnMapReadyCallback {
 
     // ================= SAVE =================
     private fun saveReport() {
-        val user = auth.currentUser ?: return
-
-        if (etAnimalName.text.isEmpty()) {
-            etAnimalName.error = "Wajib diisi"
-            return
-        }
+        if (!validateForm()) return
 
         if (isUploading) return
         isUploading = true
@@ -252,6 +248,7 @@ class ReportLostFragment : Fragment(), OnMapReadyCallback {
             .addOnSuccessListener {
                 isUploading = false
                 Toast.makeText(context, "Report tersimpan", Toast.LENGTH_LONG).show()
+                findNavController().popBackStack(R.id.homeFragment, false)
             }
     }
 
@@ -273,4 +270,47 @@ class ReportLostFragment : Fragment(), OnMapReadyCallback {
             )
         }
     }
+
+    private fun validateForm(): Boolean {
+        var valid = true
+
+        fun EditText.check(message: String) {
+            if (text.isNullOrBlank()) {
+                error = message
+                valid = false
+            }
+        }
+
+        etAnimalName.check("Nama hewan wajib diisi")
+        etAnimalColor.check("Warna hewan wajib diisi")
+        etDescription.check("Deskripsi wajib diisi")
+        etContact.check("Kontak wajib diisi")
+
+        // Spinner
+        if (spinnerAnimalType.selectedItem == null) {
+            val tv = spinnerAnimalType.selectedView as? TextView
+            tv?.error = ""
+            tv?.text = "Pilih jenis hewan"
+            valid = false
+        }
+
+        // Location
+        if (tvLocation.text.isNullOrBlank()) {
+            tvLocation.error = "Lokasi wajib dipilih"
+            valid = false
+        }
+
+        // Photo
+        if (animalPhotoUrl == null && selectedImageUri == null) {
+            Toast.makeText(
+                requireContext(),
+                "Foto hewan wajib dipilih",
+                Toast.LENGTH_SHORT
+            ).show()
+            valid = false
+        }
+
+        return valid
+    }
+
 }

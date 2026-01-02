@@ -174,7 +174,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
             showViewInGoogleMapsButton(pos)
 
-            btnResetMap.visibility = View.VISIBLE   // 🔥 INI
+            btnResetMap.visibility = View.VISIBLE   // 🔥 INIadad
 
         } else {
             // DEFAULT MAP
@@ -338,10 +338,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
             popupWindow.dismiss()
             findNavController().navigate(R.id.action_home_to_reportLostFragment)
         }
-        popupView.findViewById<LinearLayout>(R.id.optionFound).setOnClickListener {
-            popupWindow.dismiss()
-            findNavController().navigate(R.id.action_home_to_reportFoundFragment)
-        }
+
     }
     private fun resetMapToDefault() {
         val map = googleMap ?: return

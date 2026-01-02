@@ -1,26 +1,20 @@
 package com.example.proyek
 
+import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.database.*
-import android.app.AlertDialog
-import android.content.Intent
-import android.net.Uri
-
 
 class ReportDetailFragment : Fragment(), OnMapReadyCallback {
 
@@ -30,12 +24,12 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
     private lateinit var reportId: String
     private lateinit var reportType: String
 
-    // 🔑 SIMPAN KOORDINAT
     private var reportLat: Double? = null
     private var reportLng: Double? = null
     private var reporterEmail: String? = null
     private var reporterPhone: String? = null
 
+    private lateinit var btnReportFound: Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,6 +42,13 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
 
         reportId = requireArguments().getString("reportId")!!
         reportType = requireArguments().getString("reportType")!!
+
+        btnReportFound = view.findViewById(R.id.btnReportFound)
+
+        // ❌ FOUND PET → tidak perlu tombol report found
+        if (reportType == "FOUND") {
+            btnReportFound.visibility = View.GONE
+        }
 
         val mapFragment =
             childFragmentManager.findFragmentById(R.id.mapFragment)
@@ -63,6 +64,7 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
         db.reference.child(path).child(reportId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(s: DataSnapshot) {
+                    if (!s.exists()) return
 
                     val name = s.child("animalName").getValue(String::class.java)
                     val imageUrl = s.child("photoUrl").getValue(String::class.java)
@@ -76,7 +78,7 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
                     val lat = s.child("lat").getValue(Double::class.java)
                     val lng = s.child("lng").getValue(Double::class.java)
 
-                    // ===== SET TEXT =====
+                    // ===== SET UI =====
                     view.findViewById<TextView>(R.id.tvName).text = name
                     view.findViewById<TextView>(R.id.tvType).text = type
                     view.findViewById<TextView>(R.id.tvColor).text = color
@@ -84,6 +86,11 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
                     view.findViewById<TextView>(R.id.tvLocation).text = locText
                     view.findViewById<TextView>(R.id.tvContact).text = phone
                     view.findViewById<TextView>(R.id.tvEmail).text = email
+
+                    reporterEmail = email
+                    reporterPhone = phone
+                    reportLat = lat
+                    reportLng = lng
 
                     // ===== IMAGE =====
                     val img = view.findViewById<ImageView>(R.id.imgAnimal)
@@ -97,58 +104,42 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
                     // ===== MAP =====
                     if (lat != null && lng != null && ::googleMap.isInitialized) {
                         val pos = LatLng(lat, lng)
-                        googleMap.addMarker(
-                            MarkerOptions()
-                                .position(pos)
-                                .title(locText)
-                        )
-                        googleMap.moveCamera(
-                            CameraUpdateFactory.newLatLngZoom(pos, 16f)
-                        )
-
-                        googleMap.uiSettings.apply {
-                            isScrollGesturesEnabled = false
-                            isZoomGesturesEnabled = false
-                            isRotateGesturesEnabled = false
-                        }
+                        googleMap.clear()
+                        googleMap.addMarker(MarkerOptions().position(pos))
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(pos, 16f))
+                        googleMap.uiSettings.setAllGesturesEnabled(false)
                     }
 
-                    // 🔑 SIMPAN
-                    reportLat = lat
-                    reportLng = lng
-
-                    // ===== BUTTON LIHAT DI MAP HOME =====
+                    // ===== VIEW ON HOME MAP =====
                     view.findViewById<Button>(R.id.btnViewLocation).setOnClickListener {
                         if (reportLat != null && reportLng != null) {
-
                             val bundle = Bundle().apply {
                                 putDouble("focus_lat", reportLat!!)
                                 putDouble("focus_lng", reportLng!!)
                             }
-
                             findNavController().navigate(
                                 R.id.action_reportDetailFragment_to_homeFragment,
                                 bundle
                             )
                         }
                     }
-                    reporterEmail = email
-                    reporterPhone = phone
-                    view.findViewById<Button>(R.id.btnReportFound).setOnClickListener {
+
+                    // ===== REPORT FOUND (CONTACT ONLY) =====
+                    btnReportFound.setOnClickListener {
                         showContactDialog()
                     }
-
-
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
             })
     }
+
+    // ================= CONTACT =================
     private fun showContactDialog() {
         val options = arrayOf("Email", "Phone Number")
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Contact Reporter")
+            .setTitle("Contact Owner")
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> openEmail()
@@ -158,16 +149,18 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
             .setNegativeButton("Cancel", null)
             .show()
     }
+
     private fun openEmail() {
         if (reporterEmail.isNullOrEmpty()) return
 
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:$reporterEmail")
             putExtra(Intent.EXTRA_SUBJECT, "I found your pet")
-            putExtra(Intent.EXTRA_TEXT, "Hi, I think I found your animal.")
+            putExtra(Intent.EXTRA_TEXT, "Hi, I think I found your pet.")
         }
         startActivity(intent)
     }
+
     private fun openDial() {
         if (reporterPhone.isNullOrEmpty()) return
 
@@ -176,7 +169,6 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
         }
         startActivity(intent)
     }
-
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map

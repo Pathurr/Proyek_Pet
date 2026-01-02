@@ -13,9 +13,6 @@
             android:id="@+id/action_home_to_reportLostFragment"
             app:destination="@id/reportLostFragment" />
 
-        <action
-            android:id="@+id/action_home_to_reportFoundFragment"
-            app:destination="@id/reportFoundFragment" />
     </fragment>
 
     <fragment
@@ -80,6 +77,15 @@
             android:id="@+id/action_myReportFragment_to_reportFoundFragment"
             app:destination="@id/reportFoundFragment" />
 
+    </fragment>
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.proyek.SearchFragment"
+        android:label="Search">
+        <action
+            android:id="@+id/action_searchFragment_to_reportDetailFragment"
+            app:destination="@id/reportDetailFragment" />
     </fragment>
 
 </navigation>

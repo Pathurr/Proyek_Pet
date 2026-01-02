@@ -8,8 +8,8 @@
 
     <item
         android:id="@+id/notificationFragment"
-        android:icon="@drawable/ic_notification"
-        android:title="Notif"/>
+        android:icon="@drawable/ic_searchpage"
+        android:title="Search"/>
 
     <item
         android:id="@+id/profileFragment"
