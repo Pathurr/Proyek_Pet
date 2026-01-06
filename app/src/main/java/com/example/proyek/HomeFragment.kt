@@ -174,7 +174,7 @@ class HomeFragment : Fragment(), OnMapReadyCallback {
 
             showViewInGoogleMapsButton(pos)
 
-            btnResetMap.visibility = View.VISIBLE   // 🔥 INIadad
+            btnResetMap.visibility = View.VISIBLE
 
         } else {
             // DEFAULT MAP

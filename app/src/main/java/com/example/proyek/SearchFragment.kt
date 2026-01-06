@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -34,18 +35,31 @@ class SearchFragment : Fragment() {
         etSearch = view.findViewById(R.id.etSearch)
         rvSearch = view.findViewById(R.id.rvSearch)
 
-        // Recycler
         rvSearch.layoutManager = LinearLayoutManager(requireContext())
+
         adapter = PetReportAdapter(mutableListOf()) { report ->
+
+            // 🔐 VALIDASI SEBELUM NAVIGATE
+            if (report.id.isBlank()) {
+                Toast.makeText(
+                    requireContext(),
+                    "Invalid report data",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@PetReportAdapter
+            }
+
             val bundle = Bundle().apply {
                 putString("reportId", report.id)
                 putString("reportType", report.type.name)
             }
+
             findNavController().navigate(
                 R.id.action_searchFragment_to_reportDetailFragment,
                 bundle
             )
         }
+
         rvSearch.adapter = adapter
 
         loadAllReports()
@@ -62,6 +76,8 @@ class SearchFragment : Fragment() {
     // ================= FIREBASE =================
     private fun loadAllReports() {
         allReports.clear()
+        adapter.updateData(emptyList())
+
         loadLostReports()
         loadFoundReports()
     }
@@ -70,20 +86,22 @@ class SearchFragment : Fragment() {
         database.reference.child("lost_reports")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    snapshot.children.forEach {
+                    snapshot.children.forEach { s ->
+                        val id = s.key ?: return@forEach
+
                         allReports.add(
                             PetReport(
-                                id = it.key ?: "",
+                                id = id,
                                 type = ReportType.LOST,
-                                animalName = it.child("animalName").getValue(String::class.java),
-                                animalType = it.child("animalType").getValue(String::class.java) ?: "",
-                                animalColor = it.child("animalColor").getValue(String::class.java) ?: "",
-                                ownerEmail = it.child("ownerEmail").getValue(String::class.java),
-                                photoUrl = it.child("photoUrl").getValue(String::class.java)
+                                animalName = s.child("animalName").getValue(String::class.java),
+                                animalType = s.child("animalType").getValue(String::class.java) ?: "",
+                                animalColor = s.child("animalColor").getValue(String::class.java) ?: "",
+                                ownerEmail = s.child("ownerEmail").getValue(String::class.java),
+                                photoUrl = s.child("photoUrl").getValue(String::class.java)
                             )
                         )
                     }
-                    adapter.updateData(allReports)
+                    applySearch(etSearch.text.toString())
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
@@ -94,20 +112,22 @@ class SearchFragment : Fragment() {
         database.reference.child("found_reports")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    snapshot.children.forEach {
+                    snapshot.children.forEach { s ->
+                        val id = s.key ?: return@forEach
+
                         allReports.add(
                             PetReport(
-                                id = it.key ?: "",
+                                id = id,
                                 type = ReportType.FOUND,
-                                animalName = it.child("animalName").getValue(String::class.java),
-                                animalType = it.child("animalType").getValue(String::class.java) ?: "",
-                                animalColor = it.child("animalColor").getValue(String::class.java) ?: "",
+                                animalName = s.child("animalName").getValue(String::class.java),
+                                animalType = s.child("animalType").getValue(String::class.java) ?: "",
+                                animalColor = s.child("animalColor").getValue(String::class.java) ?: "",
                                 ownerEmail = null,
-                                photoUrl = it.child("photoUrl").getValue(String::class.java)
+                                photoUrl = s.child("photoUrl").getValue(String::class.java)
                             )
                         )
                     }
-                    adapter.updateData(allReports)
+                    applySearch(etSearch.text.toString())
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
@@ -119,7 +139,8 @@ class SearchFragment : Fragment() {
         val key = keyword.lowercase()
 
         val filtered = allReports.filter {
-            it.animalName?.lowercase()?.contains(key) == true ||
+            key.isBlank() ||
+                    it.animalName?.lowercase()?.contains(key) == true ||
                     it.animalType.lowercase().contains(key)
         }
 

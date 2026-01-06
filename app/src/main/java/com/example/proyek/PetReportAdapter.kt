@@ -25,25 +25,6 @@ class PetReportAdapter(
         notifyDataSetChanged()
     }
 
-    fun filter(keyword: String, typeFilter: ReportType? = null) {
-        list.clear()
-        val key = keyword.lowercase()
-
-        list.addAll(
-            fullList.filter {
-                val matchText =
-                    it.animalName?.lowercase()?.contains(key) == true ||
-                            it.animalType.lowercase().contains(key) ||
-                            it.animalColor.lowercase().contains(key)
-
-                val matchType = typeFilter == null || it.type == typeFilter
-
-                matchText && matchType
-            }
-        )
-        notifyDataSetChanged()
-    }
-
     inner class VH(view: View) : RecyclerView.ViewHolder(view) {
         val tvTitle: TextView = view.findViewById(R.id.tvTitle)
         val tvEmail: TextView = view.findViewById(R.id.tvEmail)
